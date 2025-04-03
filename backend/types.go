@@ -7,3 +7,8 @@ type User struct {
 	Password  string    `json:"password" bson:"password"`
 	CreatedAt time.Time `json:"createdAt" bson:"createdAt"`
 }
+
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}

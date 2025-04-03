@@ -7,6 +7,10 @@ import (
 	"net/http"
 	"time"
 
+	"os"
+
+	"github.com/golang-jwt/jwt/v5"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -24,6 +28,9 @@ func main() {
 
 	// register
 	http.HandleFunc("/register", register)
+
+	// login
+	http.HandleFunc("/login", loginHandler)
 	// -------------------------------------------------------------------
 
 	// Port listening
@@ -78,5 +85,56 @@ func register(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{
 		"message": "User successfully registered",
+	})
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var creds LoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	collection := MongoDB.Collection("users")
+
+	var user User
+	err := collection.FindOne(context.TODO(), bson.M{"email": creds.Email}).Decode(&user)
+	if err != nil {
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(creds.Password))
+	if err != nil {
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		return
+	}
+
+	// JWT secret
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		http.Error(w, "JWT secret missing", http.StatusInternalServerError)
+		return
+	}
+
+	// Création du token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email": user.Email,
+		"exp":   time.Now().Add(time.Hour * 24).Unix(), // expire dans 24h
+	})
+
+	tokenString, err := token.SignedString([]byte(jwtSecret))
+	if err != nil {
+		http.Error(w, "Token generation failed", http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{
+		"token": tokenString,
 	})
 }
