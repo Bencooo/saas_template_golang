@@ -30,7 +30,7 @@ func main() {
 	http.HandleFunc("/register", register)
 
 	// login
-	http.HandleFunc("/login", loginHandler)
+	http.HandleFunc("/login", login)
 	// -------------------------------------------------------------------
 
 	// Port listening
@@ -88,7 +88,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func loginHandler(w http.ResponseWriter, r *http.Request) {
+func login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
