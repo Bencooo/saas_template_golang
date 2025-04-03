@@ -184,6 +184,13 @@ func profile(w http.ResponseWriter, r *http.Request) {
 
 func jwtMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		enableCORS(w, r)
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
 			http.Error(w, "Missing Authorization header", http.StatusUnauthorized)
