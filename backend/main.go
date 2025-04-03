@@ -31,6 +31,9 @@ func main() {
 
 	// login
 	http.HandleFunc("/login", login)
+
+	//profile
+	http.HandleFunc("/profile", jwtMiddleware(profile))
 	// -------------------------------------------------------------------
 
 	// Port listening
@@ -137,4 +140,42 @@ func login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{
 		"token": tokenString,
 	})
+}
+
+func profile(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Bienvenue dans ton espace",
+	})
+}
+
+// -------------- Middleware --------------
+
+func jwtMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			http.Error(w, "Missing Authorization header", http.StatusUnauthorized)
+			return
+		}
+
+		tokenString := authHeader[len("Bearer "):]
+
+		// Vérification du token
+		secret := os.Getenv("JWT_SECRET")
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			// Assure que l’algo utilisé est bien HMAC
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+			return []byte(secret), nil
+		})
+
+		if err != nil || !token.Valid {
+			http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+			return
+		}
+
+		// Token est valide, on passe a la func profile
+		next.ServeHTTP(w, r)
+	}
 }
