@@ -41,7 +41,25 @@ func main() {
 	http.ListenAndServe(":8080", nil)
 }
 
+// -------- Cors -----------
+func enableCORS(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+}
+
+// --------------------------
+
 func register(w http.ResponseWriter, r *http.Request) {
+	enableCORS(w, r)
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -92,6 +110,13 @@ func register(w http.ResponseWriter, r *http.Request) {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
+	enableCORS(w, r)
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -143,6 +168,13 @@ func login(w http.ResponseWriter, r *http.Request) {
 }
 
 func profile(w http.ResponseWriter, r *http.Request) {
+	enableCORS(w, r)
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	json.NewEncoder(w).Encode(map[string]string{
 		"message": "Bienvenue dans ton espace",
 	})
