@@ -16,7 +16,7 @@ export default function RegisterPage() {
     setMessage('')
 
     try {
-      const res = await fetch('http://localhost:8080/register', {
+      const res = await fetch('http://localhost:3000/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

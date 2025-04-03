@@ -37,14 +37,14 @@ func main() {
 	// -------------------------------------------------------------------
 
 	// Port listening
-	fmt.Println("Start Server on 8080")
-	http.ListenAndServe(":8080", nil)
+	fmt.Println("Start Server on 3000")
+	http.ListenAndServe(":3000", nil)
 }
 
 // -------- Cors -----------
 func enableCORS(w http.ResponseWriter, r *http.Request) {
 
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -181,7 +181,6 @@ func profile(w http.ResponseWriter, r *http.Request) {
 }
 
 // -------------- Middleware --------------
-
 func jwtMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		enableCORS(w, r)
@@ -218,3 +217,5 @@ func jwtMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		next.ServeHTTP(w, r)
 	}
 }
+
+// ----------------------------------------

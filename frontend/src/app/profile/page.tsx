@@ -15,7 +15,7 @@ export default function ProfilePage() {
       return
     }
 
-    fetch('http://localhost:8080/profile', {
+    fetch('http://localhost:3000/profile', {
       headers: {
         Authorization: `Bearer ${token}`,
       },
